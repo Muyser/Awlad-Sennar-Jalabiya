@@ -4,6 +4,8 @@ import { Card, PageHeader, Table, Field, inputClass, GoldButton } from "@/compon
 import { EXPENSE_TYPES, money } from "@/lib/mockData";
 import { toast } from "@/components/ui/use-toast";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export default function Expenses() {
   const [expensesList, setExpensesList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +46,7 @@ export default function Expenses() {
   const fetchExpenses = async () => {
     try {
       const token = getAuthToken();
-      const response = await fetch("http://localhost:5000/api/expenses", {
+      const response = await fetch(`${API_URL}/api/expenses`, {
         headers: {
           "Content-Type": "application/json",
           ...(token ? { "Authorization": `Bearer ${token}` } : {})
@@ -113,8 +115,8 @@ export default function Expenses() {
 
       const expenseId = editingExpense?._id || editingExpense?.id;
       const url = expenseId 
-        ? `http://localhost:5000/api/expenses/${expenseId}`
-        : "http://localhost:5000/api/expenses";
+        ? `${API_URL}/api/expenses/${expenseId}`
+        : `${API_URL}/api/expenses`;
       
       const method = expenseId ? "PUT" : "POST";
 
@@ -166,7 +168,7 @@ export default function Expenses() {
     setDeleting(true);
     try {
       const token = getAuthToken();
-      const response = await fetch(`http://localhost:5000/api/expenses/${expenseId}`, {
+      const response = await fetch(`${API_URL}/api/expenses/${expenseId}`, {
         method: "DELETE",
         headers: {
           ...(token ? { "Authorization": `Bearer ${token}` } : {})

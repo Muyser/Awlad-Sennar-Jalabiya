@@ -6,6 +6,8 @@ import PageHero from "@/components/site/PageHero";
 import { money } from "@/lib/mockData";
 import { CATEGORIES } from "@/components/site/constants";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const SIZES = ["50", "52", "54", "56", "58", "M", "L", "XL"];
 const COLORS = [
   { name: "أبيض", hex: "#FFFFFF" },
@@ -61,7 +63,7 @@ export default function ProductsPage() {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const res = await fetch("/api/products");
+        const res = await fetch(`${API_URL}/api/products`);
         const data = await res.json();
         if (res.ok && data.success) {
           setProducts(data.data);

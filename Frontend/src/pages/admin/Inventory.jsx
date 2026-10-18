@@ -3,6 +3,8 @@ import { Image } from "@/components/ui/image";
 import { Plus, Minus, Pencil, Check, X, Loader2, AlertTriangle } from "lucide-react";
 import { Card, PageHeader, Table, Badge, GoldButton, Field, inputClass } from "@/components/admin/ui";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export default function Inventory() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,7 +35,7 @@ export default function Inventory() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/products");
+      const res = await fetch(`${API_URL}/api/products`);
       const data = await res.json();
       if (data.success) {
         setProducts(data.data || []);
@@ -63,7 +65,7 @@ export default function Inventory() {
     
     try {
       const token = getAuthToken();
-      const res = await fetch(`/api/products/${product._id}/stock`, {
+      const res = await fetch(`${API_URL}/api/products/${product._id}/stock`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -94,7 +96,7 @@ export default function Inventory() {
       formData.append("stock", newStock);
       formData.append("category", product.category?._id || product.category);
 
-      const res = await fetch(`/api/products/${product._id}`, {
+      const res = await fetch(`${API_URL}/api/products/${product._id}`, {
         method: "PUT",
         headers: {
           ...(token ? { "Authorization": `Bearer ${token}` } : {})
@@ -129,7 +131,7 @@ export default function Inventory() {
     try {
       setSubmitting(true);
       const token = getAuthToken();
-      const res = await fetch(`/api/products/${editingProduct._id}/stock`, {
+      const res = await fetch(`${API_URL}/api/products/${editingProduct._id}/stock`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

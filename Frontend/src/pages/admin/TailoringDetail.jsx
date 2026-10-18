@@ -5,6 +5,7 @@ import { Card, PageHeader, Field, inputClass, StatusBadge, SectionTitle } from "
 import { money } from "@/lib/mockData";
 import { WhatsAppIcon } from "@/components/site/Icons";
 
+const API_URL = import.meta.env.VITE_API_URL;
 const TAILOR_MAP = { جديد: "gold", "أخذ المقاسات": "blue", "قيد التفصيل": "amber", جاهز: "green", "تم التسليم": "gray" };
 const STATUSES = ["جديد", "أخذ المقاسات", "قيد التفصيل", "جاهز", "تم التسليم"];
 
@@ -55,7 +56,7 @@ export default function TailoringDetail() {
         setLoading(true);
         const token = getAuthToken();
         
-        const response = await fetch(`/api/tailoring`, {
+        const response = await fetch(`${API_URL}/api/tailoring`, {
           headers: {
             ...(token ? { Authorization: `Bearer ${token}` } : {})
           }
@@ -114,7 +115,7 @@ export default function TailoringDetail() {
         return;
       }
 
-      const response = await fetch(`/api/tailoring/${order._id}`, {
+      const response = await fetch(`${API_URL}/api/tailoring/${order._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -174,7 +175,7 @@ export default function TailoringDetail() {
         return;
       }
 
-      const response = await fetch(`/api/tailoring/${order._id}`, {
+      const response = await fetch(`${API_URL}/api/tailoring/${order._id}`, {
         method: "DELETE",
         headers: {
           "Authorization": `Bearer ${token}`

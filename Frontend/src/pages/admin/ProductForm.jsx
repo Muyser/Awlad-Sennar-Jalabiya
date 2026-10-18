@@ -4,6 +4,8 @@ import { Save, ArrowRight, X, Plus, Check, Loader2, Trash2, Image as ImageIcon }
 import { Card, PageHeader, Field, inputClass } from "@/components/admin/ui";
 import { CATEGORIES } from "@/components/site/constants";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export default function ProductForm() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -52,7 +54,7 @@ export default function ProductForm() {
       const fetchProduct = async () => {
         try {
           setFetching(true);
-          const response = await fetch(`/api/products/${id}`);
+          const response = await fetch(`${API_URL}/api/products/${id}`);
           const data = await response.json();
           if (data.success && data.data) {
             const p = data.data;
@@ -149,7 +151,7 @@ export default function ProductForm() {
         formData.append("images", file);
       });
 
-      const url = isEditing ? `/api/products/${id}` : "/api/products";
+      const url = isEditing ? `${API_URL}/api/products/${id}` : `${API_URL}/api/products`;
       const method = isEditing ? "PUT" : "POST";
 
       const response = await fetch(url, {

@@ -5,6 +5,8 @@ import { Card, PageHeader, SectionTitle, Badge, Table } from "@/components/admin
 import { money } from "@/lib/mockData";
 import { toast } from "@/components/ui/use-toast";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export default function CustomerDetail() {
   const { id } = useParams();
   
@@ -37,7 +39,7 @@ export default function CustomerDetail() {
   const fetchCustomerDetail = async () => {
     try {
       const token = getAuthToken();
-      const response = await fetch(`http://localhost:5000/api/customers/${id}`, {
+      const response = await fetch(`${API_URL}/api/customers/${id}`, {
         headers: {
           ...(token ? { "Authorization": `Bearer ${token}` } : {})
         }
@@ -72,7 +74,7 @@ export default function CustomerDetail() {
 
     try {
       const token = getAuthToken();
-      const response = await fetch(`http://localhost:5000/api/customers/${id}`, {
+      const response = await fetch(`${API_URL}/api/customers/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

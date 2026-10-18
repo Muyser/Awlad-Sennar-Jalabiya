@@ -4,6 +4,7 @@ import { Search } from "lucide-react";
 import { Card, PageHeader, Table, StatusBadge, GoldButton } from "@/components/admin/ui";
 import { money } from "@/lib/mockData";
 
+const API_URL = import.meta.env.VITE_API_URL;
 const STATUSES = ["الكل", "جديد", "تم التأكيد", "قيد التجهيز", "جاهز", "تم التسليم"];
 
 const getAuthToken = () => {
@@ -39,7 +40,7 @@ export default function Orders() {
 
         const token = getAuthToken();
 
-        const response = await fetch(`/api/orders-management?${queryParams.toString()}`, {
+        const response = await fetch(`${API_URL}/api/orders-management?${queryParams.toString()}`, {
           headers: {
             "Content-Type": "application/json",
             ...(token ? { Authorization: `Bearer ${token}` } : {}),

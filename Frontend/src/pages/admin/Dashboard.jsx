@@ -4,6 +4,7 @@ import { TrendingUp, ShoppingCart, Users, Receipt, Wallet, Scissors, AlertTriang
 import { Card, StatCard, PageHeader, Table, StatusBadge, Badge, SectionTitle } from "@/components/admin/ui";
 import { money } from "@/lib/mockData";
 
+const API_URL = import.meta.env.VITE_API_URL;
 const RANGES = ["اليوم", "هذا الأسبوع", "هذا الشهر", "فترة مخصصة"];
 
 export default function Dashboard() {
@@ -25,12 +26,29 @@ export default function Dashboard() {
     chartData: Array(12).fill(0),
   });
 
+  const getAuthToken = () => {
+    return (
+      localStorage.getItem("admin_token") ||
+      localStorage.getItem("token") ||
+      localStorage.getItem("authToken") ||
+      localStorage.getItem("accessToken") ||
+      (() => {
+        try {
+          const user = JSON.parse(localStorage.getItem("user"));
+          return user?.token || user?.accessToken;
+        } catch {
+          return null;
+        }
+      })()
+    );
+  };
+
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem("token");
-        const response = await fetch("/api/dashboard", {
+        const token = getAuthToken();
+        const response = await fetch(`${API_URL}/api/dashboard?range=${encodeURIComponent(range)}`, {
           headers: {
             ...(token ? { Authorization: `Bearer ${token}` } : {})
           }
@@ -51,7 +69,7 @@ export default function Dashboard() {
   }, [range]);
 
   const { stats, topProducts, lowStockProducts, activeTailoring, readyOrders, chartData } = dashboardData;
-  const max = chartData.length > 0 ? Math.max(...chartData, 1) : 1;
+  const max = chartData && chartData.length > 0 ? Math.max(...chartData, 1) : 1;
 
   if (loading) {
     return <div className="p-12 text-center text-[#1a2c6b] text-sm">جاري تحميل لوحة التحكم...</div>;
@@ -74,7 +92,7 @@ export default function Dashboard() {
         }
       />
 
-      {/* Stat Cards Grid - Responsive columns */}
+      {/* Stat Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4 mb-6">
         <StatCard icon={TrendingUp} label="إجمالي المبيعات" value={money(stats.totalSales)} sub="RWF" />
         <StatCard icon={ShoppingCart} label="إجمالي الطلبات" value={String(stats.totalOrders)} />
@@ -131,7 +149,7 @@ export default function Dashboard() {
               <p className="text-xs text-[#1a2c6b]/60 text-center py-2">لا توجد منتجات مباعة بعد</p>
             ) : (
               topProducts.map((p, i) => (
-                <div key={p._id} className="flex items-center gap-3 border-b border-[#1a2c6b]/5 pb-2.5 last:border-0">
+                <div key={p._id || i} className="flex items-center gap-3 border-b border-[#1a2c6b]/5 pb-2.5 last:border-0">
                   <span className="font-mono text-sm text-[#1a2c6b]/40 w-5">{i + 1}</span>
                   <span className="flex-1 text-sm text-[#1a2c6b] font-medium truncate">{p.name}</span>
                   <span className="font-mono text-xs sm:text-sm text-[#1a2c6b]/70 bg-[#1a2c6b]/5 px-2 py-0.5 rounded-sm shrink-0">{p.sold || 0} مبيع</span>
@@ -149,8 +167,8 @@ export default function Dashboard() {
             {lowStockProducts.length === 0 ? (
               <p className="text-xs text-[#1a2c6b]/60 text-center py-2">المخزون كافٍ لجميع المنتجات</p>
             ) : (
-              lowStockProducts.map((p) => (
-                <div key={p._id} className="flex items-center gap-3 border-b border-[#1a2c6b]/5 pb-2.5 last:border-0">
+              lowStockProducts.map((p, i) => (
+                <div key={p._id || i} className="flex items-center gap-3 border-b border-[#1a2c6b]/5 pb-2.5 last:border-0">
                   <AlertTriangle className="w-4 h-4 text-[#f28c28] shrink-0" />
                   <span className="flex-1 text-sm text-[#1a2c6b] font-medium truncate">{p.name}</span>
                   <span className="font-mono text-xs sm:text-sm text-[#f28c28] bg-[#f28c28]/10 px-2 py-0.5 rounded-sm shrink-0">{p.stock} متبقي</span>

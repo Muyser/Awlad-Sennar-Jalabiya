@@ -4,6 +4,8 @@ import { Image } from "@/components/ui/image";
 import { ArrowLeft, Clock, ImageIcon } from "lucide-react";
 import Reveal from "./Reveal";
 
+const API_URL = import.meta.env.VITE_API_URL || "https://your-backend.onrender.com";
+
 function OfferCard({ o }) {
   const prod = o.product || {};
   const prodImg = (Array.isArray(prod.images) && prod.images.length > 0) ? prod.images[0] : (prod.image || o.image);
@@ -95,7 +97,7 @@ export default function Offers() {
     const fetchOffers = async () => {
       try {
         setLoading(true);
-        const res = await fetch("/api/offers");
+        const res = await fetch(`${API_URL}/api/offers`);
         const data = await res.json();
         if (res.ok && data.success) {
           setOffers(data.data || []);

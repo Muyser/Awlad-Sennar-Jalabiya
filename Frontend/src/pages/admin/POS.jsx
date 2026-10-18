@@ -3,6 +3,8 @@ import { Image } from "@/components/ui/image";
 import { Search, Plus, Minus, Trash2, Check, Loader2, Receipt, Clock, AlertTriangle, X } from "lucide-react";
 import { Card, PageHeader, Field, inputClass, GoldButton, Table, Badge } from "@/components/admin/ui";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export default function POS() {
   const [productsList, setProductsList] = useState([]);
   const [ordersList, setOrdersList] = useState([]);
@@ -44,7 +46,7 @@ export default function POS() {
   const fetchProducts = async () => {
     try {
       setLoadingProducts(true);
-      const res = await fetch("/api/products");
+      const res = await fetch(`${API_URL}/api/products`);
       const data = await res.json();
       if (data.success) {
         setProductsList(data.data || []);
@@ -61,7 +63,7 @@ export default function POS() {
     const token = getAuthToken();
     try {
       setLoadingOrders(true);
-      const res = await fetch("/api/pos-orders", {
+      const res = await fetch(`${API_URL}/api/pos-orders`, {
         headers: {
           ...(token ? { "Authorization": `Bearer ${token}` } : {})
         }
@@ -132,7 +134,7 @@ export default function POS() {
 
     try {
       setSubmitting(true);
-      const res = await fetch("/api/pos-orders", {
+      const res = await fetch(`${API_URL}/api/pos-orders`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -174,7 +176,7 @@ export default function POS() {
     const token = getAuthToken();
     try {
       setDeleting(true);
-      const res = await fetch(`/api/pos-orders/${orderToDelete._id}`, {
+      const res = await fetch(`${API_URL}/api/pos-orders/${orderToDelete._id}`, {
         method: "DELETE",
         headers: {
           ...(token ? { "Authorization": `Bearer ${token}` } : {})

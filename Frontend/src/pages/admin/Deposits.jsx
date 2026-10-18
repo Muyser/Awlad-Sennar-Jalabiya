@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { Plus, Pencil, Trash2, X, Wallet, AlertTriangle } from "lucide-react";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export default function Deposits() {
   const [show, setShow] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -17,7 +19,7 @@ export default function Deposits() {
     notes: ""
   });
 
-  // دالة استخراج التوكن الذكية التي طلبت استخدامها
+  // دالة استخراج التوكن الذكية
   const getAuthToken = () => {
     return (
       localStorage.getItem("admin_token") ||
@@ -41,7 +43,7 @@ export default function Deposits() {
       setLoading(true);
       const token = getAuthToken();
       
-      const response = await fetch("/api/deposits", {
+      const response = await fetch(`${API_URL}/api/deposits`, {
         headers: {
           "Content-Type": "application/json",
           ...(token ? { "Authorization": `Bearer ${token}` } : {})
@@ -104,7 +106,7 @@ export default function Deposits() {
 
     try {
       const token = getAuthToken();
-      const url = editingId ? `/api/deposits/${editingId}` : "/api/deposits";
+      const url = editingId ? `${API_URL}/api/deposits/${editingId}` : `${API_URL}/api/deposits`;
       const methodType = editingId ? "PUT" : "POST";
 
       const response = await fetch(url, {
@@ -138,7 +140,7 @@ export default function Deposits() {
   const confirmDelete = async () => {
     try {
       const token = getAuthToken();
-      const response = await fetch(`/api/deposits/${deleteConfirmId}`, {
+      const response = await fetch(`${API_URL}/api/deposits/${deleteConfirmId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

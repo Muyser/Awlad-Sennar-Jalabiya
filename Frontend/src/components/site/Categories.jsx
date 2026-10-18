@@ -3,17 +3,13 @@ import { Image } from "@/components/ui/image";
 import { ArrowLeft, ImageIcon } from "lucide-react";
 import Reveal from "./Reveal";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 const TEXT_CATS = ["لبسات أفريقية", "عمم", "طواقي", "أحذية", "عطور", "سديري", "سراويل"];
 const DECOR_ICONS = ["◆", "✦", "❖", "✧", "◈", "◇", "◈"];
 
 function ImageCard({ cat, index }) {
   const catImg = cat.image || cat.img;
-  
-  // أول 3 عناصر في الصف العلوي (تأخذ عموداً واحداً لكل منها)، والعنصرين الأخيرين في الصف السفلي (كل منهما يأخذ عمودين ليكونوا بطاقتين عريضتين)
-  let spanClass = "md:col-span-1 md:row-span-1 min-h-[240px]";
-  if (index >= 3) {
-    spanClass = "md:col-span-1.5 md:row-span-1 min-h-[240px]"; // العنصرين الأخيرين عريضان في الأسفل
-  }
 
   return (
     <a
@@ -74,7 +70,7 @@ export default function Categories() {
     const fetchCategories = async () => {
       try {
         setLoading(true);
-        const res = await fetch("/api/categories");
+        const res = await fetch(`${API_URL}/api/categories`);
         const data = await res.json();
         if (res.ok && data.success) {
           const activeCategories = (data.data || []).filter(c => c.visible !== false);
@@ -109,7 +105,6 @@ export default function Categories() {
           <div className="text-center py-12 text-[#1a2c6b]/60">لا توجد أقسام مصورة مضافة حالياً.</div>
         ) : (
           <Reveal>
-            {/* 3 في الأعلى وعنصرين عريضين في الأسفل */}
             <div className="flex flex-col gap-4">
               {/* الصف العلوي: 3 بطاقات */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

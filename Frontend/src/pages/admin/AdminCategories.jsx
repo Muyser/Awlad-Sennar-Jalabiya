@@ -3,6 +3,8 @@ import { Image } from "@/components/ui/image";
 import { Plus, Pencil, Trash2, Eye, EyeOff, X, Check, Loader2, AlertTriangle, Upload } from "lucide-react";
 import { Card, PageHeader, GoldButton, Field, inputClass } from "@/components/admin/ui";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export default function AdminCategories() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +46,7 @@ export default function AdminCategories() {
   const fetchCategories = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/categories");
+      const res = await fetch(`${API_URL}/api/categories`);
       const data = await res.json();
       if (data.success) {
         setCategories(data.data || []);
@@ -112,7 +114,7 @@ export default function AdminCategories() {
         formData.append("image", formImageFile);
       }
 
-      const url = editingCategory ? `/api/categories/${editingCategory._id}` : "/api/categories";
+      const url = editingCategory ? `${API_URL}/api/categories/${editingCategory._id}` : `${API_URL}/api/categories`;
       const method = editingCategory ? "PUT" : "POST";
 
       const res = await fetch(url, {
@@ -152,7 +154,7 @@ export default function AdminCategories() {
     try {
       setDeleting(true);
       const token = getAuthToken();
-      const res = await fetch(`/api/categories/${catId}`, {
+      const res = await fetch(`${API_URL}/api/categories/${catId}`, {
         method: "DELETE",
         headers: {
           ...(token ? { "Authorization": `Bearer ${token}` } : {})
@@ -175,7 +177,7 @@ export default function AdminCategories() {
     }
   };
 
-  // تبديل حالة الإظهار/الإخفاء (محلياً أو عبر السيرفر إن أردت دعمها برمجياً لاحقاً)
+  // تبديل حالة الإظهار/الإخفاء
   const handleToggleVisibility = (id) => {
     setCategories(categories.map(c => c._id === id ? { ...c, visible: c.visible !== false ? false : true } : c));
   };

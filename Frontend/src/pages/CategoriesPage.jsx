@@ -5,6 +5,8 @@ import { ArrowLeft } from "lucide-react";
 import PageHero from "@/components/site/PageHero";
 import Reveal from "@/components/site/Reveal";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export default function CategoriesPage() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,7 +16,7 @@ export default function CategoriesPage() {
     const fetchCategories = async () => {
       try {
         setLoading(true);
-        const response = await fetch("/api/categories");
+        const response = await fetch(`${API_URL}/api/categories`);
         const data = await response.json();
 
         if (response.ok && data.success) {
@@ -68,7 +70,6 @@ export default function CategoriesPage() {
           {!loading && !error && categories.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
               {categories.map((c, i) => {
-                // التعامل مع أسماء الحقول حسب هيكلة قاعدة البيانات (مثل _id أو id، name، image، count)
                 const catId = c._id || c.id;
                 const catName = c.name || "قسم بدون اسم";
                 const catImage = c.image || "/placeholder.jpg";

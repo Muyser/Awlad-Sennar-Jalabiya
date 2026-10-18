@@ -5,6 +5,7 @@ import { Card, PageHeader, StatusBadge, SectionTitle } from "@/components/admin/
 import { money } from "@/lib/mockData";
 import { WhatsAppIcon } from "@/components/site/Icons";
 
+const API_URL = import.meta.env.VITE_API_URL;
 const TIMELINE = ["جديد", "تم التأكيد", "قيد التجهيز", "جاهز", "تم التسليم"];
 
 const getAuthToken = () => {
@@ -41,7 +42,7 @@ export default function OrderDetail() {
         setLoading(true);
         const token = getAuthToken();
 
-        const response = await fetch(`/api/orders-management/${id}`, {
+        const response = await fetch(`${API_URL}/api/orders-management/${id}`, {
           headers: {
             "Content-Type": "application/json",
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -71,7 +72,7 @@ export default function OrderDetail() {
     try {
       setFeedback({ type: "", text: "" });
       const token = getAuthToken();
-      const response = await fetch(`/api/orders-management/${order._id}`, {
+      const response = await fetch(`${API_URL}/api/orders-management/${order._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -102,7 +103,7 @@ export default function OrderDetail() {
     try {
       setDeleting(true);
       const token = getAuthToken();
-      const response = await fetch(`/api/orders-management/${order._id}`, {
+      const response = await fetch(`${API_URL}/api/orders-management/${order._id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

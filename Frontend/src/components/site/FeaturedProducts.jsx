@@ -6,8 +6,9 @@ import { waLink } from "./constants";
 import { WhatsAppIcon } from "./Icons";
 import Reveal from "./Reveal";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function ProductCard({ p }) {
-  // استخدام العنصر الأول من مصفوفة images أو دعم أي حقل بديل إن وجد
   const prodImg = p.images?.[0] || p.img || p.image || p.imageUrl;
   const prodColors = p.colors || [];
   const prodSizes = p.sizes || [];
@@ -122,7 +123,7 @@ export default function FeaturedProducts() {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const res = await fetch("/api/products");
+        const res = await fetch(`${API_URL}/api/products`);
         const data = await res.json();
         if (res.ok && data.success) {
           setProducts(data.data || []);

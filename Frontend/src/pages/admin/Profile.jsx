@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Lock, LogOut, Mail, Phone, Briefcase, ShieldCheck, Check, Loader2 } from "lucide-react";
 import { Card, PageHeader, Field, inputClass, SectionTitle } from "@/components/admin/ui";
 
+const API_URL = import.meta.env.VITE_API_URL;
 const PERMS = ["إدارة المنتجات", "إدارة الطلبات", "نقطة البيع", "إدارة التفصيل", "إدارة المخزون", "إدارة العملاء", "إدارة المصروفات", "إدارة الموظفين", "الإعدادات"];
 
 export default function Profile() {
@@ -48,7 +49,7 @@ export default function Profile() {
         setLoading(true);
         const token = getAuthToken();
 
-        const response = await fetch("/api/settings", {
+        const response = await fetch(`${API_URL}/api/settings`, {
           headers: {
             "Content-Type": "application/json",
             ...(token ? { "Authorization": `Bearer ${token}` } : {})
@@ -84,7 +85,7 @@ export default function Profile() {
       setSavingProfile(true);
       const token = getAuthToken();
 
-      const response = await fetch("/api/settings", {
+      const response = await fetch(`${API_URL}/api/settings`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -113,7 +114,6 @@ export default function Profile() {
     }
   };
 
-
   // تحديث كلمة المرور
   const handleUpdatePassword = async (e) => {
     e.preventDefault();
@@ -126,7 +126,7 @@ export default function Profile() {
       setSavingPassword(true);
       const token = getAuthToken();
 
-      const response = await fetch("/api/auth/change-password", {
+      const response = await fetch(`${API_URL}/api/auth/change-password`, {
         method: "POST", // تم التعديل إلى POST حسب الـ Backend
         headers: {
           "Content-Type": "application/json",
@@ -142,7 +142,6 @@ export default function Profile() {
 
       const data = await response.json();
       
-      // بما أن الـ Backend يرسل استجابة ناجحة برمز 200 و message
       if (response.ok) {
         setPasswordSaved(true);
         setCurrentPassword("");

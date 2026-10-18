@@ -4,6 +4,7 @@ import { Search } from "lucide-react";
 import { Card, PageHeader, Table, StatusBadge, GoldButton } from "@/components/admin/ui";
 import { money } from "@/lib/mockData";
 
+const API_URL = import.meta.env.VITE_API_URL;
 const TAILOR_MAP = { جديد: "gold", "أخذ المقاسات": "blue", "قيد التفصيل": "amber", جاهز: "green", "تم التسليم": "gray" };
 const STATUSES = ["الكل", "جديد", "أخذ المقاسات", "قيد التفصيل", "جاهز", "تم التسليم"];
 
@@ -41,7 +42,7 @@ export default function Tailoring() {
         if (status && status !== "الكل") queryParams.append("status", status);
         if (q) queryParams.append("search", q);
 
-        const response = await fetch(`/api/tailoring?${queryParams.toString()}`, {
+        const response = await fetch(`${API_URL}/api/tailoring?${queryParams.toString()}`, {
           headers: {
             ...(token ? { Authorization: `Bearer ${token}` } : {})
           }

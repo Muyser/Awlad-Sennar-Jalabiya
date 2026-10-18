@@ -5,6 +5,8 @@ import { Minus, Plus, Check, CheckCircle2, X } from "lucide-react";
 import PageHero from "@/components/site/PageHero";
 import { WhatsAppIcon } from "@/components/site/Icons";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export default function ProductDetail() {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
@@ -32,8 +34,8 @@ export default function ProductDetail() {
       try {
         setLoading(true);
         const [prodRes, offersRes] = await Promise.all([
-          fetch(`/api/products/${id}`),
-          fetch(`/api/offers`),
+          fetch(`${API_URL}/api/products/${id}`),
+          fetch(`${API_URL}/api/offers`),
         ]);
 
         const prodData = await prodRes.json();
@@ -126,7 +128,7 @@ export default function ProductDetail() {
     try {
       setIsSubmitting(true);
 
-      const response = await fetch("/api/orders-management", {
+      const response = await fetch(`${API_URL}/api/orders-management`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

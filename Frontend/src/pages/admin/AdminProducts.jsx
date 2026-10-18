@@ -4,6 +4,8 @@ import { Image } from "@/components/ui/image";
 import { Plus, Pencil, Trash2, Eye, EyeOff, Search, Loader2, AlertTriangle, X } from "lucide-react";
 import { Card, PageHeader, Badge, Table, GoldButton } from "@/components/admin/ui";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export default function AdminProducts() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -36,7 +38,7 @@ export default function AdminProducts() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/products");
+      const response = await fetch(`${API_URL}/api/products`);
       const data = await response.json();
       
       if (data.success) {
@@ -70,7 +72,7 @@ export default function AdminProducts() {
     try {
       setDeleting(true);
       const token = getAuthToken();
-      const response = await fetch(`/api/products/${productId}`, {
+      const response = await fetch(`${API_URL}/api/products/${productId}`, {
         method: "DELETE",
         headers: {
           ...(token ? { "Authorization": `Bearer ${token}` } : {})

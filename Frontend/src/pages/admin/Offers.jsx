@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Plus, Pencil, Trash2, Check, X, Loader2, AlertTriangle } from "lucide-react";
 import { Card, PageHeader, Table, Badge, GoldButton, Field, inputClass } from "@/components/admin/ui";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export default function Offers() {
   const [offersList, setOffersList] = useState([]);
   const [productsList, setProductsList] = useState([]);
@@ -44,7 +46,7 @@ export default function Offers() {
   const fetchOffers = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/offers");
+      const res = await fetch(`${API_URL}/api/offers`);
       const data = await res.json();
       if (data.success) {
         setOffersList(data.data || []);
@@ -59,7 +61,7 @@ export default function Offers() {
   // جلب قائمة المنتجات للقائمة المنسدلة
   const fetchProducts = async () => {
     try {
-      const res = await fetch("/api/products");
+      const res = await fetch(`${API_URL}/api/products`);
       const data = await res.json();
       if (data.success) {
         setProductsList(data.data || []);
@@ -119,7 +121,7 @@ export default function Offers() {
       setSubmitting(true);
       let res, data;
       if (editingOffer !== null) {
-        res = await fetch(`/api/offers/${editingOffer._id}`, {
+        res = await fetch(`${API_URL}/api/offers/${editingOffer._id}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -128,7 +130,7 @@ export default function Offers() {
           body: JSON.stringify(offerData),
         });
       } else {
-        res = await fetch("/api/offers", {
+        res = await fetch(`${API_URL}/api/offers`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -167,7 +169,7 @@ export default function Offers() {
     const token = getAuthToken();
     try {
       setDeleting(true);
-      const res = await fetch(`/api/offers/${offerToDelete._id}`, {
+      const res = await fetch(`${API_URL}/api/offers/${offerToDelete._id}`, {
         method: "DELETE",
         headers: {
           ...(token ? { "Authorization": `Bearer ${token}` } : {})

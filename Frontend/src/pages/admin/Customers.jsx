@@ -5,6 +5,8 @@ import { PageHeader, Table, GoldButton, Badge, Card, Field, inputClass } from "@
 import { money } from "@/lib/mockData";
 import { toast } from "@/components/ui/use-toast";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export default function Customers() {
   const [customersList, setCustomersList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -52,7 +54,7 @@ export default function Customers() {
   const fetchCustomers = async () => {
     try {
       const token = getAuthToken();
-      const response = await fetch("http://localhost:5000/api/customers", {
+      const response = await fetch(`${API_URL}/api/customers`, {
         headers: {
           "Content-Type": "application/json",
           ...(token ? { "Authorization": `Bearer ${token}` } : {})
@@ -129,8 +131,8 @@ export default function Customers() {
       };
 
       const url = editingId 
-        ? `http://localhost:5000/api/customers/${editingId}`
-        : "http://localhost:5000/api/customers";
+        ? `${API_URL}/api/customers/${editingId}`
+        : `${API_URL}/api/customers`;
       
       const method = editingId ? "PUT" : "POST";
 
@@ -182,7 +184,7 @@ export default function Customers() {
     setDeleting(true);
     try {
       const token = getAuthToken();
-      const response = await fetch(`http://localhost:5000/api/customers/${id}`, {
+      const response = await fetch(`${API_URL}/api/customers/${id}`, {
         method: "DELETE",
         headers: {
           ...(token ? { "Authorization": `Bearer ${token}` } : {})

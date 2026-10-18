@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Check, Loader2 } from "lucide-react";
 import { Card, PageHeader, Field, inputClass, SectionTitle } from "@/components/admin/ui";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export default function Settings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -55,7 +57,7 @@ export default function Settings() {
         setLoading(true);
         const token = getAuthToken();
 
-        const response = await fetch("/api/settings", {
+        const response = await fetch(`${API_URL}/api/settings`, {
           headers: {
             "Content-Type": "application/json",
             ...(token ? { "Authorization": `Bearer ${token}` } : {})
@@ -102,7 +104,7 @@ export default function Settings() {
       setSaving(true);
       const token = getAuthToken();
 
-      const response = await fetch("/api/settings", {
+      const response = await fetch(`${API_URL}/api/settings`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
