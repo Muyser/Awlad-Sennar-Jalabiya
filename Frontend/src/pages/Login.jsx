@@ -38,7 +38,7 @@ export default function Login() {
         throw new Error(data.message || "البريد الإلكتروني أو كلمة المرور غير صحيحة");
       }
 
-      // حفظ الـ token في localStorage لكي يتم استخدامه في طلبات الداشبورد
+      // حفظ الـ token في localStorage
       if (data.token || data.access_token) {
         localStorage.setItem("admin_token", data.token || data.access_token);
       }
@@ -48,7 +48,10 @@ export default function Login() {
         description: "مرحباً بك مجدداً في لوحة التحكم.",
       });
 
-      window.location.href = returnTo !== "/" ? returnTo : "/admin";
+      // استخدام useNavigate للانتقال السلس إلى لوحة التحكم أو الصفحة المطلوبة
+      const destination = returnTo !== "/" ? returnTo : "/admin";
+      navigate(destination, { replace: true });
+
     } catch (err) {
       setError(err.message || "حدث خطأ ما أثناء الاتصال بالسيرفر");
     } finally {
