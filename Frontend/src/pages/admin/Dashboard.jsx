@@ -7,9 +7,60 @@ import { money } from "@/lib/mockData";
 const API_URL = import.meta.env.VITE_API_URL;
 const RANGES = ["اليوم", "هذا الأسبوع", "هذا الشهر", "فترة مخصصة"];
 
+// دالة حساب تواريخ البداية والنهاية بناءً على النطاق المختار
+const getDateRangeParams = (selectedRange, customStart, customEnd) => {
+  const now = new Date();
+  let startDate = new Date();
+  let endDate = new Date();
+
+  switch (selectedRange) {
+    case "اليوم":
+      startDate.setHours(0, 0, 0, 0);
+      endDate.setHours(23, 59, 59, 999);
+      break;
+
+    case "هذا الأسبوع": {
+      const dayOfWeek = now.getDay();
+      // حساب بداية الأسبوع (الأحد/الإثنين)
+      const diffToStart = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+      startDate = new Date(now.setDate(diffToStart));
+      startDate.setHours(0, 0, 0, 0);
+      endDate = new Date();
+      endDate.setHours(23, 59, 59, 999);
+      break;
+    }
+
+    case "هذا الشهر":
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      startDate.setHours(0, 0, 0, 0);
+      endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      endDate.setHours(23, 59, 59, 999);
+      break;
+
+    case "فترة مخصصة":
+      if (!customStart || !customEnd) return null;
+      startDate = new Date(customStart);
+      startDate.setHours(0, 0, 0, 0);
+      endDate = new Date(customEnd);
+      endDate.setHours(23, 59, 59, 999);
+      break;
+
+    default:
+      return null;
+  }
+
+  return {
+    startDate: startDate.toISOString(),
+    endDate: endDate.toISOString(),
+  };
+};
+
 export default function Dashboard() {
   const [range, setRange] = useState("هذا الشهر");
+  const [customStartDate, setCustomStartDate] = useState("");
+  const [customEndDate, setCustomEndDate] = useState("");
   const [loading, setLoading] = useState(true);
+
   const [dashboardData, setDashboardData] = useState({
     stats: {
       totalSales: 0,
@@ -45,13 +96,25 @@ export default function Dashboard() {
 
   useEffect(() => {
     const fetchDashboard = async () => {
+      // إذا اختار "فترة مخصصة" ولم يحدد التاريخين بعد، ننتظر الإدخال
+      if (range === "فترة مخصصة" && (!customStartDate || !customEndDate)) {
+        return;
+      }
+
       try {
         setLoading(true);
         const token = getAuthToken();
-        const response = await fetch(`${API_URL}/api/dashboard?range=${encodeURIComponent(range)}`, {
+        const dateParams = getDateRangeParams(range, customStartDate, customEndDate);
+
+        let queryUrl = `${API_URL}/api/dashboard?range=${encodeURIComponent(range)}`;
+        if (dateParams) {
+          queryUrl += `&startDate=${encodeURIComponent(dateParams.startDate)}&endDate=${encodeURIComponent(dateParams.endDate)}`;
+        }
+
+        const response = await fetch(queryUrl, {
           headers: {
-            ...(token ? { Authorization: `Bearer ${token}` } : {})
-          }
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
         });
         const data = await response.json();
 
@@ -66,7 +129,7 @@ export default function Dashboard() {
     };
 
     fetchDashboard();
-  }, [range]);
+  }, [range, customStartDate, customEndDate]);
 
   const { stats, topProducts, lowStockProducts, activeTailoring, readyOrders, chartData } = dashboardData;
   const max = chartData && chartData.length > 0 ? Math.max(...chartData, 1) : 1;
@@ -82,13 +145,38 @@ export default function Dashboard() {
         title="لوحة التحكم"
         subtitle="نظرة شاملة على أداء المتجر"
         actions={
-          <select 
-            value={range} 
-            onChange={(e) => setRange(e.target.value)} 
-            className="w-full sm:w-auto px-3 py-2 bg-[#FFFFFF] border border-[#1a2c6b]/15 text-sm text-[#1a2c6b] focus:outline-none focus:border-[#f28c28] rounded-sm shadow-sm"
-          >
-            {RANGES.map((r) => <option key={r}>{r}</option>)}
-          </select>
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={range}
+              onChange={(e) => setRange(e.target.value)}
+              className="w-full sm:w-auto px-3 py-2 bg-[#FFFFFF] border border-[#1a2c6b]/15 text-sm text-[#1a2c6b] focus:outline-none focus:border-[#f28c28] rounded-sm shadow-sm cursor-pointer"
+            >
+              {RANGES.map((r) => (
+                <option key={r} value={r}>
+                  {r}
+                </option>
+              ))}
+            </select>
+
+            {/* إظهار حقول التاريخ عند اختيار "فترة مخصصة" */}
+            {range === "فترة مخصصة" && (
+              <div className="flex items-center gap-2 text-xs">
+                <input
+                  type="date"
+                  value={customStartDate}
+                  onChange={(e) => setCustomStartDate(e.target.value)}
+                  className="px-2.5 py-1.5 bg-[#FFFFFF] border border-[#1a2c6b]/15 text-[#1a2c6b] rounded-sm focus:outline-none focus:border-[#f28c28]"
+                />
+                <span className="text-[#1a2c6b]/60">إلى</span>
+                <input
+                  type="date"
+                  value={customEndDate}
+                  onChange={(e) => setCustomEndDate(e.target.value)}
+                  className="px-2.5 py-1.5 bg-[#FFFFFF] border border-[#1a2c6b]/15 text-[#1a2c6b] rounded-sm focus:outline-none focus:border-[#f28c28]"
+                />
+              </div>
+            )}
+          </div>
         }
       />
 
@@ -117,7 +205,9 @@ export default function Dashboard() {
             ))}
           </div>
           <div className="flex justify-between text-[10px] sm:text-xs text-[#1a2c6b]/60 font-mono mt-2 overflow-x-auto">
-            {["ينا", "فبر", "مار", "أبر", "ماي", "يون", "يول", "أغس", "سبت", "أكت", "نوف", "ديس"].map((m) => <span key={m} className="px-1">{m}</span>)}
+            {["ينا", "فبر", "مار", "أبر", "ماي", "يون", "يول", "أغس", "سبت", "أكت", "نوف", "ديس"].map((m) => (
+              <span key={m} className="px-1">{m}</span>
+            ))}
           </div>
         </Card>
 

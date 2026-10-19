@@ -147,16 +147,16 @@ export default function ProductDetail() {
           .map((item) => `• ${item.name} (الكمية: ${item.qty}) - ${(item.price * item.qty).toLocaleString()} RWF`)
           .join("\n");
 
-        const message = `مرحباً، أرغب في تأكيد طلبي الجديد من متجر أولاد سنار جلابية:
-📦 *رقم الطلب:* ${newOrder.orderNumber || "جديد"}
-👤 *الاسم:* ${newOrder.customer?.name || customerName}
-📱 *الهاتف:* ${newOrder.customer?.phone || customerPhone}
+          const message = `مرحباً، أرغب في تأكيد طلبي الجديد من متجر أولاد سنار جلابية:
+      📦 *رقم الطلب:* ${newOrder.orderNumber || "جديد"}
+      👤 *الاسم:* ${newOrder.customer?.name || customerName}
+      📱 *الهاتف:* ${newOrder.customer?.phone || customerPhone}
 
-*المنتجات المطلوبة:*
-${itemsList}
+        *المنتجات المطلوبة:*
+        ${itemsList}
 
-💰 *الإجمالي الكلي:* ${(newOrder.total || payload.total).toLocaleString()} RWF
-📍 يرجى تأكيد الطلب وشكراً!`;
+    💰 *الإجمالي الكلي:* ${(newOrder.total || payload.total).toLocaleString()} RWF
+    📍 يرجى تأكيد الطلب وشكراً!`;
 
         const storeWhatsAppNumber = "250794420606";
         const whatsappUrl = `https://wa.me/${storeWhatsAppNumber}?text=${encodeURIComponent(message)}`;
@@ -331,7 +331,7 @@ ${itemsList}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-[#1a2c6b]/70 mb-1">رقم الهاتف مع مفتاح الدولة</label>
+                  <label className="block text-xs text-[#1a2c6b]/70 mb-1">رقم الواتساب مع مفتاح الدولة</label>
                   <input
                     type="tel"
                     required

@@ -27,6 +27,31 @@ const getAuthToken = () => {
   );
 };
 
+// دالة تنظيف وتنسيق رقم الواتساب الذكية (تدعم +250 و 250 و 07...)
+const formatWhatsAppNumber = (rawPhone) => {
+  if (!rawPhone) return "";
+  
+  // إزالة جميع الرموز والمسافات ما عدا الأرقام وعلامة الزائد
+  let cleaned = rawPhone.toString().trim().replace(/[^\d+]/g, "");
+
+  // إذا بدأ الرقم بـ 0 (مثل 0794420606)، يتم استبدال الصفر بكود دولة رواندا (250)
+  if (cleaned.startsWith("0")) {
+    cleaned = "250" + cleaned.substring(1);
+  }
+  
+  // إزالة علامة الزائد (+) لأن رابط wa.me لا يقبلها
+  if (cleaned.startsWith("+")) {
+    cleaned = cleaned.substring(1);
+  }
+
+  // التأكد من أن الرقم صالح وطوله منطقي
+  if (cleaned.length < 9) {
+    return "";
+  }
+
+  return cleaned;
+};
+
 export default function TailoringDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -34,7 +59,7 @@ export default function TailoringDetail() {
   const [loading, setLoading] = useState(true);
   const [successMsg, setSuccessMsg] = useState(false);
 
-  // حالات النافذة المنبثقة (Popup Modal) بدلاً من الـ alert
+  // حالات النافذة المنبثقة (Popup Modal)
   const [modal, setModal] = useState({ show: false, title: "", message: "", type: "error", onConfirm: null });
 
   // الحقول القابلة للتعديل
@@ -156,7 +181,6 @@ export default function TailoringDetail() {
     }
   };
 
-  // دالة طلب حذف الطلب مع إظهار نافذة تأكيد منبثقة
   const confirmDelete = () => {
     setModal({
       show: true,
@@ -216,7 +240,8 @@ export default function TailoringDetail() {
   };
 
   const whatsappMsg = getWhatsAppMessage(status, order.orderId, customerName);
-  const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(whatsappMsg)}`;
+  const formattedPhone = formatWhatsAppNumber(phone);
+  const whatsappUrl = formattedPhone ? `https://wa.me/${formattedPhone}?text=${encodeURIComponent(whatsappMsg)}` : "#";
 
   return (
     <div className="bg-[#FFFFFF] min-h-screen text-[#1a2c6b] p-3 sm:p-6 transition-all relative">
@@ -244,8 +269,8 @@ export default function TailoringDetail() {
               <Field label="الاسم">
                 <input value={customerName} onChange={(e) => setCustomerName(e.target.value)} className={inputClass} required />
               </Field>
-              <Field label="رقم الهاتف">
-                <input value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClass} dir="ltr" required />
+              <Field label="رقم الواتساب مع مفتاح الدولة">
+                <input value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClass} placeholder="مثال: 250794420606" dir="ltr" required />
               </Field>
               <Field label="نوع الجلابية">
                 <input value={type} onChange={(e) => setType(e.target.value)} className={inputClass} />
@@ -314,6 +339,18 @@ export default function TailoringDetail() {
             href={whatsappUrl} 
             target="_blank" 
             rel="noreferrer" 
+            onClick={(e) => {
+              if (!formatWhatsAppNumber(phone)) {
+                e.preventDefault();
+                setModal({
+                  show: true,
+                  title: "رقم الواتساب غير صالح",
+                  message: "الرجاء التأكد من صحة رقم هاتف العميل قبل محاولة الإرسال عبر واتساب.",
+                  type: "error",
+                  onConfirm: null
+                });
+              }
+            }}
             className="w-full inline-flex items-center justify-center gap-2 py-3.5 bg-green-600 text-white hover:bg-green-700 transition-colors rounded-sm shadow-sm font-medium text-sm cursor-pointer"
           >
             <WhatsAppIcon className="w-5 h-5" /> إرسال التحديث للعميل عبر واتساب
@@ -329,7 +366,7 @@ export default function TailoringDetail() {
         </div>
       </form>
 
-      {/* النافذة المنبثقة المخصصة (Custom Modal Popup) بدلاً من الـ alert */}
+      {/* النافذة المنبثقة المخصصة (Custom Modal Popup) */}
       {modal.show && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 border border-[#1a2c6b]/10 animate-in fade-in zoom-in-95 duration-150">

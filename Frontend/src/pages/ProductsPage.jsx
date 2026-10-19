@@ -121,7 +121,6 @@ export default function ProductsPage() {
               </div>
               <FilterSelect label="القسم" value={cat} set={setCat} options={["الكل", ...CATEGORIES]} />
               <FilterSelect label="نوع المنتج" value={type} set={setType} options={["الكل", "جاهز", "تفصيل"]} />
-              <FilterSelect label="التوفر" value={avail} set={setAvail} options={["الكل", "متوفر", "غير متوفر"]} />
               <div>
                 <span className="block text-xs text-[#1a2c6b]/70 mb-1.5 font-medium">المقاس</span>
                 <div className="flex flex-wrap gap-1.5">

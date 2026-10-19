@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowRight, CheckCircle2, AlertCircle, Trash2, X } from "lucide-react";
+import { ArrowRight, CheckCircle2, AlertCircle, Trash2, X, AlertTriangle } from "lucide-react";
 import { Card, PageHeader, StatusBadge, SectionTitle } from "@/components/admin/ui";
 import { money } from "@/lib/mockData";
 import { WhatsAppIcon } from "@/components/site/Icons";
@@ -25,16 +25,42 @@ const getAuthToken = () => {
   );
 };
 
+// دالة تنظيف وتنسيق رقم الواتساب الذكية (تدعم +250 و 250 و 07...)
+const formatWhatsAppNumber = (rawPhone) => {
+  if (!rawPhone) return "";
+  
+  // إزالة جميع الرموز والمسافات ما عدا الأرقام وعلامة الزائد
+  let cleaned = rawPhone.toString().trim().replace(/[^\d+]/g, "");
+
+  // إذا بدأ الرقم بـ 0 (مثل 0794420606)، يتم استبدال الصفر بكود دولة رواندا (250)
+  if (cleaned.startsWith("0")) {
+    cleaned = "250" + cleaned.substring(1);
+  }
+  
+  // إزالة علامة الزائد (+) لأن رابط wa.me لا يقبلها
+  if (cleaned.startsWith("+")) {
+    cleaned = cleaned.substring(1);
+  }
+
+  // التأكد من أن الرقم صالح وطوله منطقي
+  if (cleaned.length < 9) {
+    return "";
+  }
+
+  return cleaned;
+};
+
 export default function OrderDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   
-  // حالات الرسائل والتأكيد للحذف
+  // حالات الرسائل والتأكيد للحذف والنافذة المنبثقة
   const [feedback, setFeedback] = useState({ type: "", text: "" });
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [modal, setModal] = useState({ show: false, title: "", message: "", type: "error" });
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -98,7 +124,6 @@ export default function OrderDetail() {
     }
   };
 
-  // دالة تنفيذ الحذف الفعلي بعد التأكيد من الـ Modal
   const handleDeleteOrder = async () => {
     try {
       setDeleting(true);
@@ -116,7 +141,6 @@ export default function OrderDetail() {
         throw new Error(data.message || "فشل حذف الطلب");
       }
 
-      // الانتقال لصفحة الطلبات بعد الحذف بنجاح
       navigate("/admin/orders");
     } catch (err) {
       setDeleting(false);
@@ -147,7 +171,10 @@ export default function OrderDetail() {
 
   const customerPhone = order.customer?.phone || "";
   const dynamicWaMsg = getWhatsAppMessageForCustomer(order.status, order.orderNumber, order.customer?.name);
-  const clientWaUrl = `https://wa.me/${customerPhone}?text=${encodeURIComponent(dynamicWaMsg)}`;
+  
+  // استخدام دالة التنسيق الذكية
+  const formattedPhone = formatWhatsAppNumber(customerPhone);
+  const clientWaUrl = formattedPhone ? `https://wa.me/${formattedPhone}?text=${encodeURIComponent(dynamicWaMsg)}` : "#";
 
   return (
     <div className="bg-[#FFFFFF] min-h-screen text-[#1a2c6b] p-3 sm:p-6 transition-all relative">
@@ -156,7 +183,6 @@ export default function OrderDetail() {
         subtitle={`العميل: ${order.customer?.name}`}
         actions={
           <div className="flex items-center gap-2">
-            {/* زر الحذف الذي يفتح الـ Modal */}
             <button
               onClick={() => setShowDeleteModal(true)}
               className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-red-600 hover:bg-red-700 text-white transition-colors rounded-sm text-sm font-medium shadow-sm cursor-pointer"
@@ -170,7 +196,6 @@ export default function OrderDetail() {
         }
       />
 
-      {/* صندوق التنبيهات الداخلية */}
       {feedback.text && (
         <div className={`mb-6 p-4 rounded-sm flex items-center gap-3 text-sm border ${
           feedback.type === "success" 
@@ -264,6 +289,17 @@ export default function OrderDetail() {
             href={clientWaUrl} 
             target="_blank" 
             rel="noreferrer" 
+            onClick={(e) => {
+              if (!formatWhatsAppNumber(customerPhone)) {
+                e.preventDefault();
+                setModal({
+                  show: true,
+                  title: "رقم الواتساب غير صالح",
+                  message: "الرجاء التأكد من صحة رقم هاتف العميل قبل محاولة الإرسال عبر واتساب.",
+                  type: "error"
+                });
+              }
+            }}
             className="w-full inline-flex items-center justify-center gap-2 py-3.5 bg-[#f28c28] text-white hover:bg-[#e07b1e] transition-colors rounded-sm shadow-sm font-medium text-sm cursor-pointer"
           >
             <WhatsAppIcon className="w-5 h-5" /> إرسال تحديث الحالة للعميل عبر واتساب
@@ -271,7 +307,33 @@ export default function OrderDetail() {
         </div>
       </div>
 
-      {/* نافذة التأكيد المنبثقة (Delete Confirmation Modal) */}
+      {/* نافذة التحذير إذا كان الرقم غير صالح */}
+      {modal.show && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 border border-[#1a2c6b]/10">
+            <div className="flex items-center justify-between mb-4 border-b border-[#1a2c6b]/10 pb-3">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-red-500" />
+                <h3 className="text-base font-bold text-[#1a2c6b]">{modal.title}</h3>
+              </div>
+              <button onClick={() => setModal({ ...modal, show: false })} className="text-[#1a2c6b]/50 hover:text-[#1a2c6b] cursor-pointer">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <p className="text-sm text-[#1a2c6b]/80 mb-6">{modal.message}</p>
+            <div className="flex justify-end">
+              <button
+                onClick={() => setModal({ ...modal, show: false })}
+                className="px-5 py-2 text-sm font-medium text-white bg-[#1a2c6b] hover:bg-[#152352] rounded-sm cursor-pointer"
+              >
+                حسناً
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* نافذة التأكيد المنبثقة لحذف الطلب */}
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 text-right relative animate-in fade-in zoom-in duration-200">
