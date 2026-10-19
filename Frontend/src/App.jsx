@@ -1,6 +1,6 @@
-import { Toaster } from "@/components/ui/toaster"
-import { QueryClientProvider } from '@tanstack/react-query'
-import { queryClientInstance } from '@/lib/query-client'
+import { Toaster } from "@/components/ui/toaster";
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClientInstance } from '@/lib/query-client';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
@@ -43,11 +43,11 @@ import Settings from "@/pages/admin/Settings";
 
 const AuthenticatedApp = () => {
   const isMockAdmin = localStorage.getItem("muyser_admin_logged") === "true";
-  
+  const hasToken = !!localStorage.getItem("admin_token");
   const auth = useAuth() || {};
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = auth;
+  const { isLoadingAuth, authError } = auth;
 
-  if (!isMockAdmin && (isLoadingPublicSettings || isLoadingAuth)) {
+  if (!isMockAdmin && !hasToken && isLoadingAuth) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-[#FFFFFF]">
         <div className="w-8 h-8 border-4 border-[#1a2c6b]/15 border-t-[#f28c28] rounded-full animate-spin"></div>
@@ -55,13 +55,8 @@ const AuthenticatedApp = () => {
     );
   }
 
-  if (!isMockAdmin && authError) {
-    if (authError.type === 'user_not_registered') {
-      return <UserNotRegisteredError />;
-    } else if (authError.type === 'auth_required' && typeof navigateToLogin === 'function') {
-      navigateToLogin();
-      return null;
-    }
+  if (!isMockAdmin && authError && authError.type === 'user_not_registered') {
+    return <UserNotRegisteredError />;
   }
 
   return (

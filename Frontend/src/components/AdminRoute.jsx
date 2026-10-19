@@ -5,7 +5,8 @@ import UserNotRegisteredError from "@/components/UserNotRegisteredError";
 export default function AdminRoute() {
   const { isAuthenticated, isLoadingAuth, authChecked, authError, user } = useAuth();
 
-  // التحقق مما إذا تم تسجيل الدخول بالحساب التجريبي محلياً عبر التخزين المؤقت
+  // التحقق من وجود التوكن أو الحساب التجريبي
+  const hasToken = !!localStorage.getItem("admin_token");
   const isMockAdmin = localStorage.getItem("muyser_admin_logged") === "true";
 
   if (isLoadingAuth || !authChecked) {
@@ -18,11 +19,15 @@ export default function AdminRoute() {
 
   if (authError?.type === "user_not_registered") return <UserNotRegisteredError />;
   
-  // إذا لم يكن مسجلاً عبر النظام أو عبر الحساب التجريبي، يتم توجيهه لتسجيل الدخول
-  if (!isAuthenticated && !isMockAdmin) return <Navigate to="/admin/login" replace />;
+  // إذا لم يكن هناك توكن ولا حساب تجريبي، يتم توجيهه إلى صفحة تسجيل الدخول
+  if (!isAuthenticated && !hasToken && !isMockAdmin) {
+    return <Navigate to="/login" replace />;
+  }
 
-  // إذا كان مستخدماً عادياً وليس أدمن (وليس الحساب التجريبي)، نمنعه من الدخول
-  if (user && user.role !== "admin" && !isMockAdmin) {
+  // السماح بالدخول إذا كان يملك توكن أو إذا كان الـ role يساوى admin
+  const isAuthorized = isMockAdmin || hasToken || (user && user.role === "admin") || user;
+
+  if (!isAuthorized) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FFFFFF] text-center p-6">
         <div>
