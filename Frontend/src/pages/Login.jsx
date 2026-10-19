@@ -38,9 +38,9 @@ export default function Login() {
         throw new Error(data.message || "البريد الإلكتروني أو كلمة المرور غير صحيحة");
       }
 
-      // حفظ الـ token في localStorage
-      if (data.token || data.access_token) {
-        localStorage.setItem("admin_token", data.token || data.access_token);
+      // حفظ الـ access_token القادم من الـ Backend بالشكل الصحيح
+      if (data.access_token) {
+        localStorage.setItem("admin_token", data.access_token);
       }
 
       toast({
@@ -48,7 +48,7 @@ export default function Login() {
         description: "مرحباً بك مجدداً في لوحة التحكم.",
       });
 
-      // استخدام useNavigate للانتقال السلس إلى لوحة التحكم أو الصفحة المطلوبة
+      // الانتقال السلس إلى لوحة التحكم أو الصفحة المطلوبة
       const destination = returnTo !== "/" ? returnTo : "/admin";
       navigate(destination, { replace: true });
 
