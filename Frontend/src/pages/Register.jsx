@@ -7,6 +7,8 @@ import { UserPlus, Mail, Lock, Loader2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import { toast } from "@/components/ui/use-toast";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,7 +28,7 @@ export default function Register() {
 
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:5000/api/auth/register", {
+      const response = await fetch(`${API_URL}/api/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -123,7 +125,7 @@ export default function Register() {
             />
           </div>
         </div>
-        <Button type="submit" className="w-full h-12 font-medium bg-[#1a2c6b] text-white hover:bg-[#1a2c6b]/90 rounded-xl shadow-md transition-colors" disabled={loading}>
+        <Button type="submit" className="w-full h-12 font-medium bg-[#1a2c6b] text-white hover:bg-[#1a2c6b]/90 rounded-xl shadow-md transition-colors cursor-pointer" disabled={loading}>
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 ml-2 animate-spin text-[#f28c28]" />

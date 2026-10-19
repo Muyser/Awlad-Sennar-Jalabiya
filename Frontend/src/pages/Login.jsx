@@ -8,6 +8,8 @@ import AuthLayout from "@/components/AuthLayout";
 import { safeReturnTo } from "@/lib/authReturnTo";
 import { toast } from "@/components/ui/use-toast";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,7 +24,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/login", {
+      const response = await fetch(`${API_URL}/api/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -116,7 +118,7 @@ export default function Login() {
             />
           </div>
         </div>
-        <Button type="submit" className="w-full h-12 font-medium bg-[#1a2c6b] text-[#FFFFFF] hover:bg-[#2a3fae] rounded-sm shadow-sm transition-colors" disabled={loading}>
+        <Button type="submit" className="w-full h-12 font-medium bg-[#1a2c6b] text-[#FFFFFF] hover:bg-[#2a3fae] rounded-sm shadow-sm transition-colors cursor-pointer" disabled={loading}>
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 ml-2 animate-spin text-[#f28c28]" />
