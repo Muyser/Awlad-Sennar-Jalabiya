@@ -155,21 +155,17 @@ export default function OrderDetail() {
   const currentIdx = TIMELINE.indexOf(order.status);
 
   const getWhatsAppMessageForCustomer = (status, orderNum, customerName) => {
-    const paidText = money(order.paid || 0) + " RWF";
-    const remainingText = money(order.remaining || 0) + " RWF";
-    const totalText = money(order.total || 0) + " RWF";
-
     switch (status) {
       case "تم التأكيد":
-        return `مرحباً ${customerName}، نود إعلامك بأنه قد تم *تأكيد* طلبك رقم (${orderNum}) من أولاد سنار جلابية، ونعمل على تجهيزه الآن.\n💰 الإجمالي: ${totalText} | المدفوع: ${paidText} | المتبقي: ${remainingText}`;
+        return `مرحباً ${customerName}، نود إعلامك بأنه قد تم *تأكيد* طلبك رقم (${orderNum}) من أولاد سنار جلابية، ونعمل على تجهيزه الآن. شكراً لتسوقك معنا!`;
       case "قيد التجهيز":
-        return `مرحباً ${customerName}، طلبك رقم (${orderNum}) الآن *قيد التجهيز* والتغليف في متجر أولاد سنار جلابية.\n💰 الإجمالي: ${totalText} | المدفوع: ${paidText} | المتبقي: ${remainingText}`;
+        return `مرحباً ${customerName}، طلبك رقم (${orderNum}) الآن *قيد التجهيز* والتغليف في متجر أولاد سنار جلابية.`;
       case "جاهز":
-        return `عزيزي العميل ${customerName}، طلبك رقم (${orderNum}) أصبح *جاهزاً* للتسليم/الشحن!\n💰 الإجمالي: ${totalText} | المدفوع: ${paidText} | المتبقي: ${remainingText}`;
+        return `عزيزي العميل ${customerName}، طلبك رقم (${orderNum}) أصبح *جاهزاً* للتسليم/الشحن!`;
       case "تم التسليم":
-        return `مرحباً ${customerName}، شكراً لك لاستلام طلبك رقم (${orderNum}). نتمنى أن تنال منتجات أولاد سنار جلابية إعجابك!\n💰 إجمالي الحساب: ${totalText} | المدفوع: ${paidText} | المتبقي: ${remainingText}`;
+        return `مرحباً ${customerName}، شكراً لك لاستلام طلبك رقم (${orderNum}). نتمنى أن تنال منتجات أولاد سنار جلابية إعجابك!`;
       default:
-        return `مرحباً ${customerName}، بخصوص طلبك رقم (${orderNum}) من أولاد سنار جلابية.\n💰 الإجمالي: ${totalText} | المدفوع: ${paidText} | المتبقي: ${remainingText}`;
+        return `مرحباً ${customerName}، بخصوص طلبك رقم (${orderNum}) من أولاد سنار جلابية.`;
     }
   };
 
