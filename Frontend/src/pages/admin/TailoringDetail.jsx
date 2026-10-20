@@ -225,17 +225,21 @@ export default function TailoringDetail() {
   if (!order) return <div className="p-8 text-center text-red-600">طلب التفصيل غير موجود</div>;
 
   const getWhatsAppMessage = (currentStatus, orderId, name) => {
+    const paidText = money(paidNum) + " RWF";
+    const remainingText = money(remaining) + " RWF";
+    const totalText = money(totalNum) + " RWF";
+
     switch (currentStatus) {
       case "أخذ المقاسات":
-        return `مرحباً ${name}، تم البدء بـ *أخذ المقاسات* لطلب التفصيل الخاص بك (${orderId}) في متجر أولاد سنار جلابية.`;
+        return `مرحباً ${name}، تم البدء بـ *أخذ المقاسات* لطلب التفصيل الخاص بك (${orderId}) في متجر أولاد سنار جلابية.\n💰 الإجمالي: ${totalText} | المدفوع: ${paidText} | المتبقي: ${remainingText}`;
       case "قيد التفصيل":
-        return `عزيزي العميل ${name}، طلب التفصيل الخاص بك (${orderId}) أصبح الآن *قيد التفصيل* والخياطة.`;
+        return `عزيزي العميل ${name}، طلب التفصيل الخاص بك (${orderId}) أصبح الآن *قيد التفصيل* والخياطة.\n💰 الإجمالي: ${totalText} | المدفوع: ${paidText} | المتبقي: ${remainingText}`;
       case "جاهز":
-        return `مرحباً ${name}، نود إعلامك بأن طلب التفصيل الخاص بك (${orderId}) أصبح *جاهزاً* للاستلام!`;
+        return `مرحباً ${name}، نود إعلامك بأن طلب التفصيل الخاص بك (${orderId}) أصبح *جاهزاً* للاستلام!\n💰 الإجمالي: ${totalText} | المدفوع: ${paidText} | المتبقي: ${remainingText}`;
       case "تم التسليم":
-        return `مرحباً ${name}، شكراً لاستلامك طلب التفصيل (${orderId}). نتمنى أن ينال إعجابك من أولاد سنار جلابية!`;
+        return `مرحباً ${name}، شكراً لاستلامك طلب التفصيل (${orderId}). نتمنى أن ينال إعجابك من أولاد سنار جلابية!\n💰 إجمالي الحساب: ${totalText} | المدفوع: ${paidText} | المتبقي: ${remainingText}`;
       default:
-        return `مرحباً ${name}، بخصوص طلب التفصيل الخاص بك رقم (${orderId}) من أولاد سنار جلابية.`;
+        return `مرحباً ${name}، بخصوص طلب التفصيل الخاص بك رقم (${orderId}) من أولاد سنار جلابية.\n💰 الإجمالي: ${totalText} | المدفوع: ${paidText} | المتبقي: ${remainingText}`;
     }
   };
 
