@@ -84,18 +84,20 @@ export default function Login() {
 
       <form onSubmit={handleSubmit} className="space-y-4 rtl text-right">
         <div className="space-y-2">
-          <Label htmlFor="email" className="text-[#1a2c6b]">البريد الإلكتروني</Label>
+          <Label htmlFor="email" className="text-[#1a2c6b] block">البريد الإلكتروني</Label>
           <div className="relative">
-            <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#1a2c6b]/50" aria-hidden="true" />
+            {/* نقل الأيقونة للجانب الأيسر للحقول الموجهة LTR */}
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#1a2c6b]/50" aria-hidden="true" />
             <Input
               id="email"
               type="email"
+              dir="ltr"
               autoComplete="email"
               autoFocus
               placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="pr-10 pl-4 h-12 border-[#1a2c6b]/15 text-[#1a2c6b] focus:border-[#f28c28] rounded-sm text-left dir-ltr"
+              className="pl-10 pr-4 h-12 border-[#1a2c6b]/15 text-[#1a2c6b] focus:border-[#f28c28] rounded-sm text-left dir-ltr"
               required
             />
           </div>
@@ -108,15 +110,16 @@ export default function Login() {
             </Link>
           </div>
           <div className="relative">
-            <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#1a2c6b]/50" aria-hidden="true" />
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#1a2c6b]/50" aria-hidden="true" />
             <Input
               id="password"
               type="password"
+              dir="ltr"
               autoComplete="current-password"
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="pr-10 pl-4 h-12 border-[#1a2c6b]/15 text-[#1a2c6b] focus:border-[#f28c28] rounded-sm text-left dir-ltr"
+              className="pl-10 pr-4 h-12 border-[#1a2c6b]/15 text-[#1a2c6b] focus:border-[#f28c28] rounded-sm text-left dir-ltr"
               required
             />
           </div>

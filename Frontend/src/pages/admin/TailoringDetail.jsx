@@ -104,7 +104,7 @@ export default function TailoringDetail() {
             
             if (typeof found.measurements === "object" && found.measurements !== null) {
               const m = found.measurements;
-              setMeasurements(`صدر: ${m.chest || '-'}، طول: ${m.length || '-'}، كم: ${m.sleeve || '-'}، كتف: ${m.shoulder || '-'}`);
+              setMeasurements(`طول اليد: ${m.chest || '-'}، طول: ${m.length || '-'}، كم: ${m.sleeve || '-'}، كتف: ${m.shoulder || '-'}`);
             } else {
               setMeasurements(found.measurements || "");
             }

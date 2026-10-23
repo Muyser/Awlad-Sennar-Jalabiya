@@ -5,8 +5,8 @@ import PageHero from "@/components/site/PageHero";
 import { inputClass, Field } from "@/components/admin/ui";
 import { CATEGORIES } from "@/components/site/constants";
 
-const FABRICS = ["قطن مصري", "كتان فاخر", "قطن ثقيل", "أفريقي مطبوع", "صوف", "حرير"];
-const COLORS = ["أبيض", "كريمي", "أسود", "كحلي", "بُنّي", "أخضر", "نيلي", "أوكرة"];
+const FABRICS = ["بوليستر", "قطن هندي", "قطن انجليزي", "كتان", "خليط قطن بوليستر"];
+const COLORS = ["أسود", "بني", "كحلي", "زيتي", "لبني", "أخضر", "مزركش", "وردي", "أحمر", "أبيض", "أزرق", "سماوي"];
 
 export default function TailoringOrder() {
   const navigate = useNavigate();
@@ -71,16 +71,16 @@ export default function TailoringOrder() {
 
         // 2. تجهيز رسالة الواتساب ليرسلها العميل لمتجرك
         const message = `مرحباً، أرغب في تأكيد طلب تفصيل جديد:
-📦 *رقم الطلب:* ${newOrder.orderId}
-👤 *الاسم:* ${newOrder.customer.name}
-📱 *الهاتف:* ${newOrder.customer.phone}
-👔 *نوع الجلابية:* ${newOrder.type}
-🧶 *القماش:* ${newOrder.fabric}
-🎨 *اللون:* ${newOrder.color}
-📏 *المقاسات:* (صدر: ${form.chest || '-'}، طول: ${form.length || '-'}، كم: ${form.sleeve || '-'}، كتف: ${form.shoulder || '-'})
-📝 *ملاحظات:* ${form.notes || 'لا يوجد'}
-📅 *تاريخ التسليم:* ${newOrder.delivery}
-📍 يرجى اعتماد الطلب وشكراً!`;
+      📦 *رقم الطلب:* ${newOrder.orderId}
+      👤 *الاسم:* ${newOrder.customer.name}
+      📱 *الهاتف:* ${newOrder.customer.phone}
+      👔 *نوع الجلابية:* ${newOrder.type}
+      🧶 *القماش:* ${newOrder.fabric}
+      🎨 *اللون:* ${newOrder.color}
+      📏 *المقاسات:* (طول اليد: ${form.chest || '-'}، طول: ${form.length || '-'}، كم: ${form.sleeve || '-'}، كتف: ${form.shoulder || '-'})
+      📝 *ملاحظات:* ${form.notes || 'لا يوجد'}
+      📅 *تاريخ التسليم:* ${newOrder.delivery}
+      📍 يرجى اعتماد الطلب وشكراً!`;
 
         const storeWhatsAppNumber = "250794420606";
         const whatsappUrl = `https://wa.me/${storeWhatsAppNumber}?text=${encodeURIComponent(message)}`;
@@ -184,7 +184,7 @@ export default function TailoringOrder() {
             <div className="pt-2">
               <p className="text-sm font-medium text-[#1a2c6b]/80 mb-3">المقاسات (سم)</p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <Field label="الصدر">
+                <Field label="طول اليد">
                   <input
                     value={form.chest}
                     onChange={set("chest")}
