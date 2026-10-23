@@ -184,45 +184,51 @@ export default function POS() {
     }
   };
 
-  // دالة تحويل الإيصال الورقي إلى صورة ومشاركته مباشرة على الواتساب
+  // دالة تحويل الإيصال الورقي إلى صورة ومشاركته مباشرة على الواتساب لأي طلب محدد
   const handleShareReceiptImage = async (order) => {
-    if (!receiptRef.current) return;
-    try {
-      setGeneratingReceipt(true);
-      const canvas = await html2canvas(receiptRef.current, { scale: 3, useCORS: true });
-      
-      canvas.toBlob((blob) => {
-        if (!blob) return;
-        const file = new File([blob], `Receipt-${order._id || "POS"}.png`, { type: "image/png" });
+    if (!order) return;
+    setLastCreatedOrder(order);
+    
+    // الانتظار حتى يتم تحديث الـ DOM وتحديث محتوى الإيصال بالبيانات الجديدة
+    setTimeout(async () => {
+      if (!receiptRef.current) return;
+      try {
+        setGeneratingReceipt(true);
+        const canvas = await html2canvas(receiptRef.current, { scale: 3, useCORS: true });
+        
+        canvas.toBlob((blob) => {
+          if (!blob) return;
+          const file = new File([blob], `Receipt-${order._id || "POS"}.png`, { type: "image/png" });
 
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          navigator.share({
-            files: [file],
-            title: "إيصال مبيعات - أولاد سنار جلابية",
-            text: `إيصال المبيعات للعميل ${order.customer?.name || ""}`
-          });
-        } else {
-          const link = document.createElement("a");
-          link.href = URL.createObjectURL(blob);
-          link.download = `Receipt-${order.customer?.name || "POS"}.png`;
-          link.click();
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            navigator.share({
+              files: [file],
+              title: "إيصال مبيعات - أولاد سنار جلابية",
+              text: `إيصال المبيعات للعميل ${order.customer?.name || ""}`
+            });
+          } else {
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `Receipt-${order.customer?.name || "POS"}.png`;
+            link.click();
 
-          const formattedPhone = formatWhatsAppNumber(order.customer?.phone);
-          if (formattedPhone) {
-            window.open(`https://wa.me/${formattedPhone}`, "_blank");
+            const formattedPhone = formatWhatsAppNumber(order.customer?.phone);
+            if (formattedPhone) {
+              window.open(`https://wa.me/${formattedPhone}`, "_blank");
+            }
+            setModal({
+              show: true,
+              title: "تم تجهيز صورة الإيصال 📄",
+              message: "تم حفظ صورة الإيصال المطبوع على جهازك وتم فتح الواتساب، يمكنك الآن إرفاق الصورة وإرسالها للعميل مباشرة."
+            });
           }
-          setModal({
-            show: true,
-            title: "تم تجهيز صورة الإيصال 📄",
-            message: "تم حفظ صورة الإيصال المطبوع على جهازك وتم فتح الواتساب، يمكنك الآن إرفاق الصورة وإرسالها للعميل مباشرة."
-          });
-        }
-      }, "image/png");
-    } catch (err) {
-      console.error("خطأ أثناء تحويل الإيصال:", err);
-    } finally {
-      setGeneratingReceipt(false);
-    }
+        }, "image/png");
+      } catch (err) {
+        console.error("خطأ أثناء تحويل الإيصال:", err);
+      } finally {
+        setGeneratingReceipt(false);
+      }
+    }, 100);
   };
 
   const confirmDeleteOrder = (order) => {
@@ -502,14 +508,12 @@ export default function POS() {
                     label: "إيصال صوري", 
                     render: (r) => (
                       <button 
-                        onClick={() => {
-                          setLastCreatedOrder(r);
-                          handleShareReceiptImage(r);
-                        }} 
-                        className="p-1.5 text-green-600 hover:text-green-700 transition-colors rounded-sm hover:bg-green-50 inline-flex items-center gap-1 text-xs cursor-pointer"
+                        onClick={() => handleShareReceiptImage(r)} 
+                        disabled={generatingReceipt}
+                        className="p-1.5 text-green-600 hover:text-green-700 transition-colors rounded-sm hover:bg-green-50 inline-flex items-center gap-1 text-xs cursor-pointer disabled:opacity-50"
                         title="إرسال صورة الإيصال المطبوع"
                       >
-                        <Share2 className="w-4 h-4" />
+                        {generatingReceipt ? <Loader2 className="w-4 h-4 animate-spin" /> : <Share2 className="w-4 h-4" />}
                       </button>
                     ) 
                   },
