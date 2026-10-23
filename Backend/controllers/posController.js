@@ -29,7 +29,6 @@ export const createPosOrder = async (req, res) => {
         return res.status(404).json({ success: false, message: `المنتج غير موجود: ${item.name}` });
       }
 
-      // التحقق من أن المخزون يكفي
       if (product.stock < item.qty) {
         return res.status(400).json({ 
           success: false, 
@@ -37,22 +36,20 @@ export const createPosOrder = async (req, res) => {
         });
       }
 
-      // خصم الكمية المباعة من المخزون
       product.stock -= item.qty;
 
-      // إذا نفد المخزون، يمكن تحديث حالة التوفر اختيارياً
       if (product.stock <= 0) {
         product.stock = 0;
         product.available = false;
       }
 
-      await product.save(); // حفظ التحديث في قاعدة البيانات
+      await product.save();
     }
 
-    // 2. حفظ فاتورة البيع في جدول PosOrder
+    // 2. حفظ فاتورة البيع في جدول PosOrder مع رقم الهاتف المدخل
     const order = await PosOrder.create({
       customer: {
-        name: customer?.name || "",
+        name: customer?.name || "عميل نقدي",
         phone: customer?.phone || "",
       },
       cart,

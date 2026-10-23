@@ -1,9 +1,27 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Image } from "@/components/ui/image";
-import { Search, Plus, Minus, Trash2, Check, Loader2, Receipt, Clock, AlertTriangle, X } from "lucide-react";
-import { Card, PageHeader, Field, inputClass, GoldButton, Table, Badge } from "@/components/admin/ui";
+import { Search, Plus, Minus, Trash2, Check, Loader2, Receipt, Clock, AlertTriangle, X, Share2, Printer } from "lucide-react";
+import { Card, PageHeader, Field, inputClass, GoldButton, Table } from "@/components/admin/ui";
+import { WhatsAppIcon } from "@/components/site/Icons";
+import html2canvas from "html2canvas";
 
 const API_URL = import.meta.env.VITE_API_URL;
+
+// دالة تنظيف وتنسيق رقم الواتساب الذكية
+const formatWhatsAppNumber = (rawPhone) => {
+  if (!rawPhone) return "";
+  let cleaned = rawPhone.toString().trim().replace(/[^\d+]/g, "");
+  if (cleaned.startsWith("0")) {
+    cleaned = "250" + cleaned.substring(1);
+  }
+  if (cleaned.startsWith("+")) {
+    cleaned = cleaned.substring(1);
+  }
+  if (cleaned.length < 9) {
+    return "";
+  }
+  return cleaned;
+};
 
 export default function POS() {
   const [productsList, setProductsList] = useState([]);
@@ -11,6 +29,7 @@ export default function POS() {
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [generatingReceipt, setGeneratingReceipt] = useState(false);
   
   const [q, setQ] = useState("");
   const [cart, setCart] = useState([]);
@@ -18,13 +37,18 @@ export default function POS() {
   const [paid, setPaid] = useState("");
   const [customer, setCustomer] = useState({ name: "", phone: "" });
   const [done, setDone] = useState(false);
+  const [lastCreatedOrder, setLastCreatedOrder] = useState(null);
+
+  const receiptRef = useRef(null);
 
   // حالات نافذة تأكيد حذف الطلب
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [orderToDelete, setOrderToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
-  // دالة مساعدة للحصول على التوكن
+  // حالات النافذة المنبثقة للتنبيهات
+  const [modal, setModal] = useState({ show: false, title: "", message: "" });
+
   const getAuthToken = () => {
     return (
       localStorage.getItem("admin_token") ||
@@ -42,7 +66,6 @@ export default function POS() {
     );
   };
 
-  // جلب المنتجات المتاحة
   const fetchProducts = async () => {
     try {
       setLoadingProducts(true);
@@ -58,7 +81,6 @@ export default function POS() {
     }
   };
 
-  // جلب سجل طلبات نقطة البيع
   const fetchOrders = async () => {
     const token = getAuthToken();
     try {
@@ -84,7 +106,6 @@ export default function POS() {
     fetchOrders();
   }, []);
 
-  // تصفية المنتجات حسب البحث والمتاحة
   const list = productsList.filter((p) => p.name.includes(q) && p.available);
 
   const add = (p) => {
@@ -112,17 +133,16 @@ export default function POS() {
   const paidNum = Number(paid) || 0;
   const remaining = total - paidNum;
 
-  // إتمام البيع وإرسال الطلب للسيرفر وتحديث القائمة والمخزون
   const handleCheckout = async () => {
     if (cart.length === 0) {
-      alert("السلة فارغة، لا يمكن إتمام البيع");
+      setModal({ show: true, title: "السلة فارغة", message: "السلة فارغة، لا يمكن إتمام البيع." });
       return;
     }
 
     const token = getAuthToken();
     const orderData = {
       customer: {
-        name: customer.name,
+        name: customer.name || "عميل نقدي",
         phone: customer.phone,
       },
       cart,
@@ -147,32 +167,71 @@ export default function POS() {
 
       if (data.success) {
         setDone(true);
+        setLastCreatedOrder(data.data);
         setCart([]);
         setPaid("");
         setCustomer({ name: "", phone: "" });
-        fetchOrders(); // تحديث سجل الطلبات
-        fetchProducts(); // تحديث كميات المخزون الظاهرة في الواجهة
+        fetchOrders();
+        fetchProducts();
       } else {
-        alert(data.message || "حدث خطأ أثناء تسجيل عملية البيع");
+        setModal({ show: true, title: "فشل العملية", message: data.message || "حدث خطأ أثناء تسجيل عملية البيع." });
       }
     } catch (error) {
       console.error("خطأ في الاتصال بالخادم:", error);
-      alert("حدث خطأ في الاتصال بالخادم");
+      setModal({ show: true, title: "خطأ في الاتصال", message: "حدث خطأ في الاتصال بالخادم." });
     } finally {
       setSubmitting(false);
     }
   };
 
-  // فتح نافذة تأكيد حذف طلب بيع
+  // دالة تحويل الإيصال الورقي إلى صورة ومشاركته مباشرة على الواتساب
+  const handleShareReceiptImage = async (order) => {
+    if (!receiptRef.current) return;
+    try {
+      setGeneratingReceipt(true);
+      const canvas = await html2canvas(receiptRef.current, { scale: 3, useCORS: true });
+      
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        const file = new File([blob], `Receipt-${order._id || "POS"}.png`, { type: "image/png" });
+
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          navigator.share({
+            files: [file],
+            title: "إيصال مبيعات - أولاد سنار جلابية",
+            text: `إيصال المبيعات للعميل ${order.customer?.name || ""}`
+          });
+        } else {
+          const link = document.createElement("a");
+          link.href = URL.createObjectURL(blob);
+          link.download = `Receipt-${order.customer?.name || "POS"}.png`;
+          link.click();
+
+          const formattedPhone = formatWhatsAppNumber(order.customer?.phone);
+          if (formattedPhone) {
+            window.open(`https://wa.me/${formattedPhone}`, "_blank");
+          }
+          setModal({
+            show: true,
+            title: "تم تجهيز صورة الإيصال 📄",
+            message: "تم حفظ صورة الإيصال المطبوع على جهازك وتم فتح الواتساب، يمكنك الآن إرفاق الصورة وإرسالها للعميل مباشرة."
+          });
+        }
+      }, "image/png");
+    } catch (err) {
+      console.error("خطأ أثناء تحويل الإيصال:", err);
+    } finally {
+      setGeneratingReceipt(false);
+    }
+  };
+
   const confirmDeleteOrder = (order) => {
     setOrderToDelete(order);
     setDeleteModalOpen(true);
   };
 
-  // تنفيذ عملية الحذف الفعلي للطلب
   const handleDeleteOrder = async () => {
     if (!orderToDelete) return;
-
     const token = getAuthToken();
     try {
       setDeleting(true);
@@ -188,11 +247,11 @@ export default function POS() {
         setDeleteModalOpen(false);
         setOrderToDelete(null);
       } else {
-        alert(data.message || "حدث خطأ أثناء الحذف");
+        setModal({ show: true, title: "فشل الحذف", message: data.message || "حدث خطأ أثناء الحذف." });
       }
     } catch (error) {
       console.error("خطأ في حذف الطلب:", error);
-      alert("حدث خطأ في الاتصال بالخادم");
+      setModal({ show: true, title: "خطأ في الاتصال", message: "حدث خطأ في الاتصال بالخادم." });
     } finally {
       setDeleting(false);
     }
@@ -200,13 +259,12 @@ export default function POS() {
 
   const money = (val) => Number(val || 0).toLocaleString();
 
-  // تصفية طلبات اليوم فقط
   const todayStr = new Date().toDateString();
   const todayOrders = ordersList.filter(o => new Date(o.createdAt).toDateString() === todayStr);
   const todayTotalRevenue = todayOrders.reduce((sum, o) => sum + (o.total || 0), 0);
 
   return (
-    <div className="bg-[#FFFFFF] min-h-screen text-[#1a2c6b] p-3 sm:p-6 transition-all space-y-6">
+    <div className="bg-[#FFFFFF] min-h-screen text-[#1a2c6b] p-3 sm:p-6 transition-all space-y-6 relative">
       <PageHeader title="نقطة البيع" subtitle="واجهة سريعة لإتمام البيع ومتابعة مبيعات اليوم" />
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">
@@ -257,7 +315,7 @@ export default function POS() {
         <Card className="p-4 sm:p-5 flex flex-col bg-white border border-[#1a2c6b]/10 rounded-lg shadow-sm h-fit">
           <h2 className="font-heading text-lg font-bold mb-3 text-[#1a2c6b]">السلة ({cart.length})</h2>
           
-          <div className="flex-1 space-y-3 max-h-[260px] overflow-y-auto pr-1">
+          <div className="flex-1 space-y-3 max-h-[220px] overflow-y-auto pr-1">
             {cart.length === 0 && <p className="text-center text-[#1a2c6b]/40 text-sm py-8">السلة فارغة — اختر منتجاً</p>}
             {cart.map((i) => (
               <div key={i.id} className="flex items-center gap-2 border-b border-[#1a2c6b]/8 pb-3">
@@ -282,15 +340,16 @@ export default function POS() {
                   value={customer.name} 
                   onChange={(e) => setCustomer({ ...customer, name: e.target.value })} 
                   className={inputClass} 
-                  placeholder="اختياري"
+                  placeholder="اسم العميل"
                 />
               </Field>
-              <Field label="الهاتف">
+              <Field label="رقم الواتساب">
                 <input 
                   value={customer.phone} 
                   onChange={(e) => setCustomer({ ...customer, phone: e.target.value })} 
                   className={inputClass} 
-                  placeholder="اختياري"
+                  placeholder="250..." 
+                  dir="ltr"
                 />
               </Field>
             </div>
@@ -331,10 +390,27 @@ export default function POS() {
               disabled={submitting}
             >
               {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-              {submitting ? "جاري إتمام البيع..." : <><Check className="w-4 h-4 ml-1" /> تأكيد البيع</>}
+              {submitting ? "جاري إتمام البيع..." : <><Check className="w-4 h-4 ml-1" /> تأكيد البيع وإصدار الفاتورة</>}
             </GoldButton>
             
-            {done && <p className="text-center text-xs text-green-700 font-medium bg-green-50 border border-green-200 py-2 rounded-sm">تمت العملية وتحديث المخزون بنجاح!</p>}
+            {done && lastCreatedOrder && (
+              <div className="space-y-2 pt-2">
+                <p className="text-center text-xs text-green-700 font-medium bg-green-50 border border-green-200 py-2 rounded-sm">تمت العملية وتحديث المخزون بنجاح!</p>
+                <button
+                  type="button"
+                  onClick={() => handleShareReceiptImage(lastCreatedOrder)}
+                  disabled={generatingReceipt}
+                  className="w-full inline-flex items-center justify-center gap-2 py-2.5 bg-green-600 hover:bg-green-700 text-white transition-colors rounded-sm text-xs font-medium shadow-sm cursor-pointer disabled:opacity-50"
+                >
+                  {generatingReceipt ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <WhatsAppIcon className="w-4 h-4" />
+                  )}
+                  {generatingReceipt ? "جاري تحويل الإيصال لصورة..." : "إرسال صورة الإيصال المطبوع عبر واتساب"}
+                </button>
+              </div>
+            )}
           </div>
         </Card>
       </div>
@@ -422,6 +498,22 @@ export default function POS() {
                     ) 
                   },
                   { 
+                    key: "receipt", 
+                    label: "إيصال صوري", 
+                    render: (r) => (
+                      <button 
+                        onClick={() => {
+                          setLastCreatedOrder(r);
+                          handleShareReceiptImage(r);
+                        }} 
+                        className="p-1.5 text-green-600 hover:text-green-700 transition-colors rounded-sm hover:bg-green-50 inline-flex items-center gap-1 text-xs cursor-pointer"
+                        title="إرسال صورة الإيصال المطبوع"
+                      >
+                        <Share2 className="w-4 h-4" />
+                      </button>
+                    ) 
+                  },
+                  { 
                     key: "actions", 
                     label: "إجراءات", 
                     render: (r) => (
@@ -441,6 +533,102 @@ export default function POS() {
           )}
         </Card>
       </div>
+
+      {/* القالب الورقي الحراري الخاص بالإيصال (يتم تحويله لصورة عبر html2canvas) */}
+      <div className="absolute top-[-9999px] left-[-9999px] pointer-events-none">
+        <div 
+          ref={receiptRef}
+          className="p-6 bg-white text-black font-sans w-[380px] border border-gray-400 text-right leading-relaxed"
+          dir="rtl"
+        >
+          <div className="text-center border-b-2 border-black pb-4 mb-4 space-y-2">
+            <h1 
+              className="text-2xl font-black text-black tracking-normal" 
+              style={{ fontFamily: 'Arial, sans-serif', letterSpacing: '0px' }}
+            >
+              أولاد سنار جلابية
+            </h1>
+            <p className="text-xs font-semibold text-gray-700 uppercase tracking-wider my-1">
+              AWLAD SENNAR GALABIYA
+            </p>
+            <div className="pt-1">
+              <span className="text-xs font-bold bg-black text-white py-1.5 px-3 rounded-xs inline-block">
+                إيصال مبيعات نقدية / POS RECEIPT
+              </span>
+            </div>
+          </div>
+
+          <div className="text-xs space-y-1.5 mb-4 border-b border-dashed border-black pb-3">
+            <p className="flex justify-between"><span>رقم الفاتورة:</span> <strong>#{lastCreatedOrder?._id?.substring(18) || "POS"}</strong></p>
+            <p className="flex justify-between"><span>التاريخ:</span> <span>{new Date(lastCreatedOrder?.createdAt || Date.now()).toLocaleDateString('ar-EG')}</span></p>
+            <p className="flex justify-between"><span>العميل:</span> <span>{lastCreatedOrder?.customer?.name || "عميل نقدي"}</span></p>
+            <p className="flex justify-between"><span>الهاتف:</span> <span dir="ltr">{lastCreatedOrder?.customer?.phone || "-"}</span></p>
+          </div>
+
+          <table className="w-full text-xs text-right mb-4 border-b border-dashed border-black pb-3">
+            <thead>
+              <tr className="border-b-2 border-black">
+                <th className="py-1 text-right">الصنف</th>
+                <th className="py-1 text-center">الكمية</th>
+                <th className="py-1 text-left">الإجمالي</th>
+              </tr>
+            </thead>
+            <tbody>
+              {lastCreatedOrder?.cart?.map((item, idx) => (
+                <tr key={idx} className="border-b border-gray-200">
+                  <td className="py-1.5 font-bold">{item.name}</td>
+                  <td className="py-1.5 text-center">{item.qty}</td>
+                  <td className="py-1.5 text-left font-bold">{money(item.price * item.qty)} RWF</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <div className="text-xs space-y-2 mb-4">
+            <div className="flex justify-between font-extrabold text-sm border-b border-black pb-1.5">
+              <span>إجمالي المشتريات:</span>
+              <span>{money(lastCreatedOrder?.total)} RWF</span>
+            </div>
+            <div className="flex justify-between">
+              <span>المبلغ المدفوع:</span>
+              <span className="font-bold text-green-800">{money(lastCreatedOrder?.paid)} RWF</span>
+            </div>
+            <div className="flex justify-between">
+              <span>المبلغ المتبقي:</span>
+              <span className="font-bold text-red-700">{money(lastCreatedOrder?.remaining)} RWF</span>
+            </div>
+            <div className="flex justify-between pt-1 border-t border-gray-300">
+              <span>طريقة الدفع:</span>
+              <span className="font-bold">{lastCreatedOrder?.payment}</span>
+            </div>
+          </div>
+
+          <div className="text-center text-[10px] border-t-2 border-black pt-3 mt-3 space-y-1">
+            <p className="font-bold text-xs">✨ شكراً لتسوقكم من أولاد سنار جلابية ✨</p>
+            <p className="text-gray-600">نسعد بخدمتكم دائماً ونتمنى لكم يوماً سعيداً!</p>
+          </div>
+        </div>
+      </div>
+
+      {/* مودال تنبيهات عامة */}
+      {modal.show && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-sm p-6 relative border border-[#1a2c6b]/10 text-[#1a2c6b] text-center">
+            <button onClick={() => setModal({ show: false, title: "", message: "" })} className="absolute left-4 top-4 text-[#1a2c6b]/60 hover:text-[#f28c28] cursor-pointer">
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="font-heading text-lg font-bold mb-2">{modal.title}</h3>
+            <p className="text-sm text-[#1a2c6b]/70 mb-6">{modal.message}</p>
+            <button
+              type="button"
+              onClick={() => setModal({ show: false, title: "", message: "" })}
+              className="w-full py-2.5 bg-[#1a2c6b] hover:bg-[#152352] text-white transition-colors rounded-sm text-sm font-medium cursor-pointer"
+            >
+              حسناً
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* مودال تأكيد الحذف */}
       {deleteModalOpen && (
