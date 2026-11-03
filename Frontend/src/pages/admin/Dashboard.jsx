@@ -21,7 +21,6 @@ const getDateRangeParams = (selectedRange, customStart, customEnd) => {
 
     case "هذا الأسبوع": {
       const dayOfWeek = now.getDay();
-      // حساب بداية الأسبوع (الأحد/الإثنين)
       const diffToStart = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
       startDate = new Date(now.setDate(diffToStart));
       startDate.setHours(0, 0, 0, 0);
@@ -96,7 +95,6 @@ export default function Dashboard() {
 
   useEffect(() => {
     const fetchDashboard = async () => {
-      // إذا اختار "فترة مخصصة" ولم يحدد التاريخين بعد، ننتظر الإدخال
       if (range === "فترة مخصصة" && (!customStartDate || !customEndDate)) {
         return;
       }
@@ -158,7 +156,6 @@ export default function Dashboard() {
               ))}
             </select>
 
-            {/* إظهار حقول التاريخ عند اختيار "فترة مخصصة" */}
             {range === "فترة مخصصة" && (
               <div className="flex items-center gap-2 text-xs">
                 <input
@@ -180,8 +177,8 @@ export default function Dashboard() {
         }
       />
 
-      {/* Stat Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4 mb-6">
+      {/* Stat Cards Grid - تم تعديلها هنا لتكون بطاقتين في الصف في الشاشات الصغيرة grid-cols-2 */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4 mb-6">
         <StatCard icon={TrendingUp} label="إجمالي المبيعات" value={money(stats.totalSales)} sub="RWF" />
         <StatCard icon={ShoppingCart} label="إجمالي الطلبات" value={String(stats.totalOrders)} />
         <StatCard icon={Users} label="العملاء" value={String(stats.totalCustomers)} />
