@@ -68,7 +68,7 @@ export default function CategoriesPage() {
 
           {/* عرض شبكة الأقسام القادمة من الـ Backend */}
           {!loading && !error && categories.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
               {categories.map((c, i) => {
                 const catId = c._id || c.id;
                 const catName = c.name || "قسم بدون اسم";
@@ -88,15 +88,15 @@ export default function CategoriesPage() {
                         fittingType="fill"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-[#1a2c6b]/90 via-[#1a2c6b]/20 to-transparent" />
-                      <div className="absolute inset-0 p-6 flex flex-col justify-end">
-                        <span className="text-[#f28c28] text-xs font-mono mb-2 font-semibold">
+                      <div className="absolute inset-0 p-4 sm:p-6 flex flex-col justify-end">
+                        <span className="text-[#f28c28] text-xs font-mono mb-1.5 sm:mb-2 font-semibold">
                           {catCount} منتج
                         </span>
-                        <h3 className="font-heading text-xl font-bold text-[#FFFFFF] mb-3">
+                        <h3 className="font-heading text-lg sm:text-xl font-bold text-[#FFFFFF] mb-2 sm:mb-3">
                           {catName}
                         </h3>
-                        <span className="flex items-center gap-1.5 text-sm text-[#FFFFFF]/90 opacity-0 -translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 font-medium">
-                          عرض المنتجات <ArrowLeft className="w-4 h-4 text-[#f28c28]" />
+                        <span className="flex items-center gap-1.5 text-xs sm:text-sm text-[#FFFFFF]/90 opacity-0 -translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 font-medium">
+                          عرض المنتجات <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#f28c28]" />
                         </span>
                       </div>
                     </Link>

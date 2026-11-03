@@ -14,7 +14,7 @@ function ImageCard({ cat, index }) {
   return (
     <a
       href={`#products?category=${encodeURIComponent(cat.name)}`}
-      className={`group relative overflow-hidden ${index >= 3 ? "md:col-span-1.5" : "md:col-span-1"} min-h-[240px] rounded-lg bg-gray-50 border border-[#1a2c6b]/10`}
+      className="group relative overflow-hidden min-h-[180px] md:min-h-[220px] rounded-lg bg-gray-50 border border-[#1a2c6b]/10 shadow-sm"
     >
       {catImg ? (
         <Image
@@ -25,22 +25,22 @@ function ImageCard({ cat, index }) {
         />
       ) : (
         <div className="absolute inset-0 flex flex-col items-center justify-center text-[#1a2c6b]/30 gap-1 bg-white">
-          <ImageIcon className="w-10 h-10" />
-          <span className="text-xs font-medium">لا توجد صورة</span>
+          <ImageIcon className="w-8 h-8" />
+          <span className="text-[11px] font-medium">لا توجد صورة</span>
         </div>
       )}
 
       <div className="absolute inset-0 bg-gradient-to-t from-[#1a2c6b]/95 via-[#1a2c6b]/30 to-transparent" />
       
-      <div className="absolute inset-0 p-5 flex flex-col justify-end">
-        <h3 className="font-heading text-xl md:text-2xl text-[#FFFFFF] font-bold mb-1">{cat.name}</h3>
+      <div className="absolute inset-0 p-3.5 md:p-5 flex flex-col justify-end">
+        <h3 className="font-heading text-lg md:text-2xl text-[#FFFFFF] font-bold mb-0.5">{cat.name}</h3>
         {cat.count !== undefined && (
-          <span className="text-xs text-white/80 font-mono mb-1">
+          <span className="text-[11px] text-white/80 font-mono mb-0.5">
             {cat.count} منتج
           </span>
         )}
-        <span className="flex items-center gap-1.5 text-xs text-[#f28c28] opacity-0 -translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-          اكتشف المجموعة <ArrowLeft className="w-3.5 h-3.5" />
+        <span className="flex items-center gap-1 text-[11px] text-[#f28c28] opacity-0 -translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+          اكتشف المجموعة <ArrowLeft className="w-3 h-3" />
         </span>
       </div>
     </a>
@@ -74,7 +74,8 @@ export default function Categories() {
         const data = await res.json();
         if (res.ok && data.success) {
           const activeCategories = (data.data || []).filter(c => c.visible !== false);
-          setCategories(activeCategories.slice(0, 5));
+          // جلب 4 أقسام فقط ليكون الترتيب متوازناً (2 في الأعلى و 2 في الأسفل)
+          setCategories(activeCategories.slice(0, 4));
         }
       } catch (err) {
         console.error("Error fetching categories:", err);
@@ -105,19 +106,10 @@ export default function Categories() {
           <div className="text-center py-12 text-[#1a2c6b]/60">لا توجد أقسام مصورة مضافة حالياً.</div>
         ) : (
           <Reveal>
-            <div className="flex flex-col gap-4">
-              {/* الصف العلوي: 3 بطاقات */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {categories.slice(0, 3).map((cat, index) => (
-                  <ImageCard key={cat._id || cat.name} cat={cat} index={index} />
-                ))}
-              </div>
-              {/* الصف السفلي: بطاقتان عريضتان */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {categories.slice(3, 5).map((cat, index) => (
-                  <ImageCard key={cat._id || cat.name} cat={cat} index={index + 3} />
-                ))}
-              </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {categories.map((cat, index) => (
+                <ImageCard key={cat._id || cat.name} cat={cat} index={index} />
+              ))}
             </div>
           </Reveal>
         )}
