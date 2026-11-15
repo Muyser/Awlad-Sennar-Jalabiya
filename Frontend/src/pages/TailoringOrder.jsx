@@ -5,6 +5,8 @@ import PageHero from "@/components/site/PageHero";
 import { inputClass, Field } from "@/components/admin/ui";
 import { CATEGORIES } from "@/components/site/constants";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const FABRICS = ["بوليستر", "قطن هندي", "قطن انجليزي", "كتان", "خليط قطن بوليستر"];
 const COLORS = ["أسود", "بني", "كحلي", "زيتي", "لبني", "أخضر", "مزركش", "وردي", "أحمر", "أبيض", "أزرق", "سماوي"];
 
@@ -39,7 +41,7 @@ export default function TailoringOrder() {
 
     try {
       // 1. إرسال الطلب للـ Backend لحفظه تلقائياً
-      const response = await fetch("/api/tailoring", {
+      const response = await fetch(`${API_URL}/api/tailoring`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
